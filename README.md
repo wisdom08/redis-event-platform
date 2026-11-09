@@ -8,6 +8,8 @@
 
 필수 환경: **Eclipse Temurin JDK 25**, Docker Engine/Desktop와 Compose v2.
 Gradle은 Wrapper로 실행한다(9.8.2). Spring Boot는 4.0.9로 고정했다.
+Redis는 **8.2.11**을 기준으로 하며 Compose와 Testcontainers 모두 `redis:8.2.11-alpine`을 사용한다.
+소스 분석은 [Redis 8.2.11 태그](https://github.com/redis/redis/tree/8.2.11)를 기준으로 하고, 실험 결과에는 실제 소스 커밋 SHA와 이미지 digest를 기록한다.
 
 ```bash
 cp .env.example .env
@@ -127,7 +129,7 @@ flowchart TD
 | 영역 | 기술 |
 |---|---|
 | Backend | Java 25 LTS (Eclipse Temurin / HotSpot), Spring Boot 4.x, Spring Data Redis, Spring Data JPA |
-| Data | Redis (실험별 버전 고정), PostgreSQL |
+| Data | Redis 8.2.11, PostgreSQL |
 | Realtime | SSE, WebSocket, Redis Pub/Sub, Redis Streams |
 | Test | JUnit Jupiter (Spring Boot BOM), Testcontainers, k6 |
 | OS / Network | Rocky Linux 9/10, systemd, firewalld, SELinux, Nginx |

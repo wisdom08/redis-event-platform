@@ -24,7 +24,7 @@ class InfrastructureIntegrationTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17.6-alpine");
     @Container
-    static final GenericContainer<?> REDIS = new GenericContainer<>(DockerImageName.parse("redis:7.4.6-alpine"))
+    static final GenericContainer<?> REDIS = new GenericContainer<>(DockerImageName.parse("redis:8.2.11-alpine"))
             .withExposedPorts(6379);
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {

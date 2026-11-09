@@ -7,5 +7,6 @@
 - 각 모듈은 com.redis.eventplatform 하위 패키지를 사용해 앱의 컴포넌트/엔티티 스캔 범위에 포함한다.
 - 스키마 자동 생성은 사용하지 않는다. 첫 테이블 추가 시 버전 관리된 마이그레이션을 도입한다.
 - 통합 테스트는 Docker를 필수로 요구하며 명시적인 integrationTest 태스크로 실행한다. CI에서 항상 실행한다.
+- Redis 기준 버전은 8.2.11이며 Compose와 Testcontainers에서 redis:8.2.11-alpine을 사용한다. 소스 분석도 8.2.11 태그를 기준으로 한다.
 - Redis와 PostgreSQL 이미지 버전은 Compose와 Testcontainers에서 함께 변경한다.
 - 운영 배포/보안/복제 설정과 도메인 기능은 후속 단계에서 구현한다.

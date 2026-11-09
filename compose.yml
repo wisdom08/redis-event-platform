@@ -15,7 +15,7 @@ services:
       timeout: 3s
       retries: 10
   redis:
-    image: redis:7.4.6-alpine
+    image: redis:8.2.11-alpine
     command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
     ports:
       - "127.0.0.1:6379:6379"
