@@ -1,0 +1,22 @@
+plugins {
+    id 'base'
+    id 'org.springframework.boot' version '4.0.9' apply false
+}
+subprojects {
+    apply plugin: 'java-library'
+    group = 'com.redis.eventplatform'
+    version = '0.0.1-SNAPSHOT'
+    java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
+    dependencies {
+        implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.9')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+    tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        testLogging { events 'failed', 'skipped' }
+    }
+}
+tasks.named('check') { dependsOn subprojects.collect { it.tasks.named('check') } }
+tasks.named('assemble') { dependsOn subprojects.collect { it.tasks.named('assemble') } }

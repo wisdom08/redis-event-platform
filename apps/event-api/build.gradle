@@ -1,0 +1,32 @@
+plugins { id 'org.springframework.boot' }
+dependencies {
+    implementation project(':modules:event')
+    implementation project(':modules:traffic-control')
+    implementation project(':modules:messaging')
+    implementation project(':modules:consistency-cache')
+    implementation project(':modules:leaderboard')
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
+}
+tasks.named('test') {
+    useJUnitPlatform { excludeTags 'integration' }
+    // Bootstrap contains only integration tests; unit tests arrive with domain logic.
+    failOnNoDiscoveredTests = false
+}
+tasks.register('integrationTest', Test) {
+    description = 'Runs PostgreSQL and Redis integration tests (requires Docker).'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform { includeTags 'integration' }
+    shouldRunAfter tasks.named('test')
+}

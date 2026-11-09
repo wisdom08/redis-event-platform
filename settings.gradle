@@ -1,0 +1,8 @@
+pluginManagement { repositories { gradlePluginPortal(); mavenCentral() } }
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories { mavenCentral() }
+}
+rootProject.name = 'redis-event-platform'
+include 'apps:event-api'
+include 'modules:event', 'modules:traffic-control', 'modules:messaging', 'modules:consistency-cache', 'modules:leaderboard'
