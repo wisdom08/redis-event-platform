@@ -7,9 +7,11 @@
 - AGENTS.local.md는 개인 작업 기록이며 커밋하거나 비밀 정보를 기록하지 않는다. 공유할 결정은 docs/adr 또는 README.md에 반영한다.
 
 ## 프로젝트 목적과 현재 범위
-- README.md와 docs/adr/0001-initial-project-structure.md를 먼저 확인한다.
+- README.md와 docs/adr/0001-initial-project-structure.md, docs/adr/0002-infrastructure-reliability-direction.md를 먼저 확인한다.
+- 단계별 목표와 현재 구현 차이는 docs/roadmap의 공유 로드맵 및 implementation-gap-analysis.md를 확인한다.
 - Redis 기반 쿠폰 발급·대기열의 동시성, 정합성, 처리량, 장애 복구를 검증하는 프로젝트다.
-- 현재는 초기 골격이다. 도메인 API, 테이블, 워커와 운영 배포는 아직 구현하지 않았다.
+- 현재는 PostgreSQL과 단일 API 앱을 사용하는 초기 골격이다. 도메인 API, 테이블, 워커와 운영 배포는 아직 구현하지 않았다.
+- 목표 DB는 MySQL 8이며 Phase 1에서 전환한다. Phase 2에서 API/Worker를 독립 JVM·컨테이너로 분리한다. 목표를 현재 구현 완료로 설명하지 않는다.
 - 기본 대화와 프로젝트 문서는 한국어로 작성하고 코드 식별자는 영어로 작성한다.
 
 ## 구조와 의존성
@@ -21,7 +23,7 @@
 - modules/leaderboard: 점수와 순위.
 - 앱이 기능 모듈에 의존한다. 모듈에서 앱을 참조하거나 모듈 간 순환 의존성을 만들지 않는다.
 - Java 패키지는 com.redis.eventplatform 하위를 사용한다.
-- 별도 worker, 공통 모듈, 마이크로서비스는 실제 필요가 생길 때 도입하고 구조 결정은 docs/adr에 기록한다.
+- 별도 worker는 로드맵 Phase 2에서 도입한다. 공통 모듈과 마이크로서비스는 실제 필요가 생길 때 검토하고 구조 결정은 docs/adr에 기록한다.
 
 ## 개발 환경과 명령
 - Eclipse Temurin JDK 25를 기준으로 하며 Gradle Wrapper를 사용한다.
@@ -41,10 +43,10 @@
 - build만으로 통합 테스트가 실행되지는 않는다. DB/Redis 연결 및 설정 변경 시 integrationTest도 실행한다.
 - Docker나 네트워크 제한으로 검증이 막히면 수행한 검사와 미검증 항목을 구분해 보고한다. 테스트를 우회하고 성공했다고 보고하지 않는다.
 - DB 스키마 자동 생성에 의존하지 않는다. 첫 테이블 추가 시 버전 관리된 마이그레이션을 도입한다.
-- Redis Lua의 원자성과 PostgreSQL 트랜잭션의 경계를 구분한다. Redis 키만으로 exactly-once를 보장한다고 가정하지 않는다.
+- Redis Lua의 원자성과 DB 트랜잭션의 경계를 구분한다. Redis 키만으로 exactly-once를 보장한다고 가정하지 않는다.
 - 쿠폰 기능에서는 초과 발급과 동일 이벤트·사용자 중복 확정을 검증한다. 대기 순서와 최종 발급 순서의 보장 범위를 명시한다.
 - Streams 소비자는 중복 처리와 DB 커밋 이후 알림을 고려한다.
-- Redis/PostgreSQL 이미지 버전 변경 시 Compose와 Testcontainers를 함께 갱신한다.
+- Redis/DB 이미지 버전 변경 시 Compose와 Testcontainers를 함께 갱신한다.
 
 ## 문서와 실험
 - 실행 방법과 설정이 바뀌면 README.md도 갱신한다.
