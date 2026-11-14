@@ -4,9 +4,9 @@
 
 **상태:** 초기 골격 · **목표 환경:** Rocky Linux 온프레미스 실습 · **구조:** Gradle 멀티모듈, API/Worker 독립 실행 목표
 
-현재는 **단일 API 앱 + Redis + PostgreSQL** 연결 기반만 구현되어 있다. 다음 목표는 **MySQL 8 전환 → API/Worker 분리 → 확장·장애 복구 검증**이다. 도메인 API, Worker, MySQL, 운영 배포는 아직 구현하지 않았다. [공유 로드맵](docs/roadmap/infrastructure-reliability-roadmap.md)과 [현재 구현 차이 분석](docs/roadmap/implementation-gap-analysis.md)을 기준으로 단계별로 진행한다.
+현재는 **단일 API 앱 + Redis + MySQL 8.4.13** 연결 설정과 통합 테스트가 있다. 다음 목표는 **쿠폰 MVP → API/Worker 분리 → 확장·장애 복구 검증**이다. 도메인 API, Worker, 운영 배포는 아직 구현하지 않았다. [공유 로드맵](docs/roadmap/infrastructure-reliability-roadmap.md)과 [현재 구현 차이 분석](docs/roadmap/implementation-gap-analysis.md)을 기준으로 단계별로 진행한다.
 
-## 로컬 개발 시작 (현재 PostgreSQL 구성)
+## 로컬 개발 시작
 
 필수 환경: **Eclipse Temurin JDK 25**, Docker Engine/Desktop와 Compose v2.
 Gradle은 Wrapper로 실행한다(9.8.2). Spring Boot는 4.0.9로 고정했다.
@@ -33,15 +33,17 @@ docker compose up -d --wait
 
 ```bash
 ./gradlew build                                # 컴파일, 단위 테스트, 실행 JAR 생성
-./gradlew :apps:event-api:integrationTest       # Docker 필수: 실제 PostgreSQL/Redis 연결 검증
+./gradlew :apps:event-api:integrationTest       # Docker 필수: 실제 MySQL/Redis 연결 검증
 java -jar apps/event-api/build/libs/event-api-0.0.1-SNAPSHOT.jar
 ```
 
 통합 테스트는 임시 컨테이너를 사용하며 로컬 Compose를 실행할 필요가 없다. CI에서는 두 명령을 모두 실행한다.
 현재 도메인 API/테이블은 없으며, 스키마 변경은 첫 기능 구현 시 마이그레이션 도구로 관리한다.
-초기 구조는 [ADR 0001](docs/adr/0001-initial-project-structure.md), MySQL 전환과 API/Worker 분리 방향은 [ADR 0002](docs/adr/0002-infrastructure-reliability-direction.md)에 기록했다. 실행 명령은 현재 코드 기준이며 MySQL 전환 후 함께 갱신한다.
+초기 구조는 [ADR 0001](docs/adr/0001-initial-project-structure.md), MySQL 전환과 API/Worker 분리 방향은 [ADR 0002](docs/adr/0002-infrastructure-reliability-direction.md)에 기록했다. MySQL은 Compose와 Testcontainers 모두 `mysql:8.4.13`을 사용한다. 문자셋은 utf8mb4, 서버 타임존은 UTC로 설정한다.
 
 CI와 동일한 검증: `./gradlew build :apps:event-api:integrationTest --no-daemon`. 영속 볼륨을 삭제하는 `docker compose down -v`는 데이터 보존이 필요한 환경에서 사용하지 않는다.
+
+Linux VM에 MySQL·Redis만 먼저 실행하려면 [Rocky Linux 인프라 실행 절차](docs/runbooks/rocky-linux-infrastructure.md)를 따른다. 이 단계에는 JDK가 필요하지 않다.
 
 ## 1. 프로젝트 소개
 
@@ -140,7 +142,7 @@ Replica는 Primary에서 복제받으며 Worker의 쓰기 대상이 아니다. �
 | 영역 | 기술 |
 |---|---|
 | Backend | Java 25 LTS (Eclipse Temurin / HotSpot), Spring Boot 4.x, Spring Data Redis, Spring Data JPA |
-| Data | Redis 8.2.11, MySQL 8 목표 (현재 PostgreSQL 17.6) |
+| Data | Redis 8.2.11, MySQL 8.4.13 |
 | Realtime | SSE, WebSocket, Redis Pub/Sub, Redis Streams |
 | Test | JUnit Jupiter (Spring Boot BOM), Testcontainers, k6 |
 | OS / Network | Rocky Linux 9/10, systemd, firewalld, SELinux, Nginx |

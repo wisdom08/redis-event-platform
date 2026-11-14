@@ -10,8 +10,8 @@
 - README.md와 docs/adr/0001-initial-project-structure.md, docs/adr/0002-infrastructure-reliability-direction.md를 먼저 확인한다.
 - 단계별 목표와 현재 구현 차이는 docs/roadmap의 공유 로드맵 및 implementation-gap-analysis.md를 확인한다.
 - Redis 기반 쿠폰 발급·대기열의 동시성, 정합성, 처리량, 장애 복구를 검증하는 프로젝트다.
-- 현재는 PostgreSQL과 단일 API 앱을 사용하는 초기 골격이다. 도메인 API, 테이블, 워커와 운영 배포는 아직 구현하지 않았다.
-- 목표 DB는 MySQL 8이며 Phase 1에서 전환한다. Phase 2에서 API/Worker를 독립 JVM·컨테이너로 분리한다. 목표를 현재 구현 완료로 설명하지 않는다.
+- 현재는 MySQL 8.4.13·Redis 연결 설정과 단일 API 앱을 사용하는 초기 골격이다. 도메인 API, 테이블, 워커와 운영 배포는 아직 구현하지 않았다.
+- DB는 MySQL 8.4.13을 사용하며 Compose와 Testcontainers 버전을 함께 유지한다. Phase 2에서 API/Worker를 독립 JVM·컨테이너로 분리한다. 목표를 현재 구현 완료로 설명하지 않는다.
 - 기본 대화와 프로젝트 문서는 한국어로 작성하고 코드 식별자는 영어로 작성한다.
 
 ## 구조와 의존성

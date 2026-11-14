@@ -1,6 +1,6 @@
 # 현재 구현과 목표의 차이
 
-- 확인일: 2026-11-12
+- 최초 확인일: 2026-11-12 (아래 표는 전환 전 분석 이력)
 - 범위: 코드·설정 정적 확인 및 문서 갱신. 이번 작업에서 빌드·통합 테스트·장애 실험은 실행하지 않았다.
 - 기준: [공유 로드맵](infrastructure-reliability-roadmap.md), [ADR 0002](../adr/0002-infrastructure-reliability-direction.md)
 
@@ -51,3 +51,11 @@ docker compose config --quiet
 ```
 
 MVP 이후에는 동일 이벤트·사용자 중복 확정 0건과 재고 초과 발급 0건, 예약/발행 경계 장애, DB 커밋 후 ACK 전 장애를 테스트한다. API/Worker 1개·2개 비교, 자원 경쟁, 복제·복원은 각 단계의 측정 환경과 반복 조건을 함께 기록한다. 현재 문서 갱신만으로 Phase 0 전체 또는 이후 단계를 완료로 표시하지 않는다.
+
+## 2026-11-15 MySQL 기반 설정 적용
+
+- MySQL 8.4.13 드라이버·JDBC URL·Compose·Testcontainers 설정으로 변경했다.
+- 서버 utf8mb4·UTC 설정, 루트/앱 계정 분리, 일반 계정 SELECT 1 healthcheck를 구성했다. MySQL·Redis 포트는 localhost에만 바인딩한다.
+- Rocky Linux 10.2 aarch64 VM은 사용자가 OS·SSH 키·Docker 설치 완료를 알려준 상태다. 실제 VM의 서비스 기동은 아직 확인하지 않았다.
+- 데이터 이관이나 기존 볼륨 삭제는 수행하지 않았다. 테이블·마이그레이션·쿠폰 MVP·Worker는 후속 작업이다.
+- 검증: `docker compose config --quiet`, `./gradlew build :apps:event-api:integrationTest --no-daemon`, `git diff --check`, 로컬 Markdown 링크 검사 통과. 통합 테스트 1개에서 MySQL 연결·버전·문자셋·UTC 설정과 Redis 저장/조회를 확인했다. Docker Desktop 28.1.1 및 로컬 OpenJDK 25.0.4에서 실행했으며 Temurin CI와 Rocky VM의 실제 Compose 기동은 별도 확인이 필요하다.

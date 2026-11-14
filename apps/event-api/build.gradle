@@ -10,12 +10,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
-    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation 'org.testcontainers:testcontainers-mysql'
 }
 tasks.named('test') {
     useJUnitPlatform { excludeTags 'integration' }
@@ -23,7 +23,7 @@ tasks.named('test') {
     failOnNoDiscoveredTests = false
 }
 tasks.register('integrationTest', Test) {
-    description = 'Runs PostgreSQL and Redis integration tests (requires Docker).'
+    description = 'Runs MySQL and Redis integration tests (requires Docker).'
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath

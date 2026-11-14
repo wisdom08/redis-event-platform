@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -22,7 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class InfrastructureIntegrationTest {
     @Container @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17.6-alpine");
+    static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.4.13")
+            .withCommand("--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci",
+                    "--default-time-zone=+00:00");
     @Container
     static final GenericContainer<?> REDIS = new GenericContainer<>(DockerImageName.parse("redis:8.2.11-alpine"))
             .withExposedPorts(6379);
@@ -35,8 +37,11 @@ class InfrastructureIntegrationTest {
     @Autowired StringRedisTemplate redis;
 
     @Test
-    void connectsToPostgresAndRedis() {
+    void connectsToMysqlAndRedis() {
         assertThat(jdbc.queryForObject("select 1", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select version()", String.class)).startsWith("8.4.13");
+        assertThat(jdbc.queryForObject("select @@character_set_server", String.class)).isEqualTo("utf8mb4");
+        assertThat(jdbc.queryForObject("select @@global.time_zone", String.class)).isEqualTo("+00:00");
         String key = "test:bootstrap:" + java.util.UUID.randomUUID();
         try {
             redis.opsForValue().set(key, "ready", Duration.ofSeconds(30));

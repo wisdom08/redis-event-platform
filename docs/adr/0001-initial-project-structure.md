@@ -13,6 +13,6 @@
 
 ## 후속 결정과 현재 적용 범위
 
-2026-11-12 로드맵 갱신으로 목표 DB는 MySQL 8, 목표 실행 구조는 API/Worker 독립 JVM·컨테이너로 정했다. 현재 코드는 위 초기 결정대로 PostgreSQL과 단일 API 앱을 사용한다. 전환이 완료되었다는 의미가 아니며, MySQL 전환은 Phase 1, Worker 추가는 Phase 2에서 검증과 함께 진행한다.
+2026-11-12 로드맵 갱신으로 목표 DB는 MySQL 8, 목표 실행 구조는 API/Worker 독립 JVM·컨테이너로 정했다. 초기 코드는 PostgreSQL 설정과 단일 API 앱으로 구성했다. 2026-11-15 MySQL 8.4.13 연결 설정·Compose·통합 테스트로 변경했다. Worker 추가는 Phase 2에서 진행한다. 검증 상태는 구현 차이 분석에 기록한다.
 
 기존 Gradle 멀티모듈·패키지 경계, 버전 관리된 마이그레이션, Docker 기반 통합 테스트 원칙은 유지한다. 상세 방향과 제약은 [ADR 0002](0002-infrastructure-reliability-direction.md), 단계별 계획은 [공유 로드맵](../roadmap/infrastructure-reliability-roadmap.md)을 따른다.

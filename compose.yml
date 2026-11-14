@@ -1,20 +1,25 @@
 services:
-  postgres:
-    image: postgres:17.6-alpine
+  mysql:
+    image: mysql:8.4.13
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+00:00"]
     environment:
-      POSTGRES_DB: event_platform
-      POSTGRES_USER: ${DB_USERNAME:-event_platform}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-local_password}
+      MYSQL_DATABASE: event_platform
+      MYSQL_USER: ${DB_USERNAME:-event_platform}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-local_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local_root_password}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:3306:3306"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$$MYSQL_USER" -D "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
   redis:
+    restart: unless-stopped
     image: redis:8.2.11-alpine
     command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
     ports:
@@ -27,5 +32,5 @@ services:
       timeout: 3s
       retries: 10
 volumes:
-  postgres-data:
+  mysql-data:
   redis-data:
