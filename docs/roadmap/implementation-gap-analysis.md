@@ -59,3 +59,13 @@ MVP 이후에는 동일 이벤트·사용자 중복 확정 0건과 재고 초과
 - Rocky Linux 10.2 aarch64 VM은 사용자가 OS·SSH 키·Docker 설치 완료를 알려준 상태다. 실제 VM의 서비스 기동은 아직 확인하지 않았다.
 - 데이터 이관이나 기존 볼륨 삭제는 수행하지 않았다. 테이블·마이그레이션·쿠폰 MVP·Worker는 후속 작업이다.
 - 검증: `docker compose config --quiet`, `./gradlew build :apps:event-api:integrationTest --no-daemon`, `git diff --check`, 로컬 Markdown 링크 검사 통과. 통합 테스트 1개에서 MySQL 연결·버전·문자셋·UTC 설정과 Redis 저장/조회를 확인했다. Docker Desktop 28.1.1 및 로컬 OpenJDK 25.0.4에서 실행했으며 Temurin CI와 Rocky VM의 실제 Compose 기동은 별도 확인이 필요하다.
+
+## Flyway와 초기 스키마 추가
+
+Flyway 실행 책임은 event-api에 두고 V1 events, V2 coupon_issuances를 추가했다. 이벤트 수량·기간 CHECK와 발급 (event_id, user_id) UNIQUE·외래키를 적용했다. 발급 API·재고 차감 트랜잭션·Redis 예약은 아직 구현하지 않았으므로 초과 발급 방지가 완성된 것은 아니다. 세부 결정은 ADR 0003을 따른다.
+
+검증: `./gradlew build :apps:event-api:integrationTest --no-daemon` 통과(통합 테스트 4개). 빈 MySQL에서 V1/V2 적용·재실행 0건·체크섬 검증, 동일 이벤트/사용자 중복 거부, 다른 이벤트/사용자 발급 허용, 재고·기간 CHECK 및 외래키 거부를 확인했다. `git diff --check`와 로컬 문서 링크 검사도 통과했다. VM DB에는 이번 작업에서 접속하지 않았다.
+
+후속 결정: 실제 DB에 V1/V2 미적용임을 사용자에게 확인하고 초기 SQL의 수량·기간·사용자 ID CHECK를 제거했다. DB에는 PK·NOT NULL·UNIQUE·FK를 유지한다. 수량·기간·사용자 ID 검증과 재고 차감 트랜잭션은 후속 애플리케이션 구현 대상이다. 위 CHECK 테스트 결과는 제거 전 이력이다.
+
+CHECK 제거 후 재검증: build 및 integrationTest 통과(5개). Flyway 적용·재실행, 중복 발급 거부, 존재하지 않는 이벤트 참조 거부, 발급 이력이 있는 이벤트 삭제 거부와 데이터 보존을 확인했다.

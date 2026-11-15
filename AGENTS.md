@@ -10,7 +10,7 @@
 - README.md와 docs/adr/0001-initial-project-structure.md, docs/adr/0002-infrastructure-reliability-direction.md를 먼저 확인한다.
 - 단계별 목표와 현재 구현 차이는 docs/roadmap의 공유 로드맵 및 implementation-gap-analysis.md를 확인한다.
 - Redis 기반 쿠폰 발급·대기열의 동시성, 정합성, 처리량, 장애 복구를 검증하는 프로젝트다.
-- 현재는 MySQL 8.4.13·Redis 연결 설정과 단일 API 앱을 사용하는 초기 골격이다. 도메인 API, 테이블, 워커와 운영 배포는 아직 구현하지 않았다.
+- 현재는 MySQL 8.4.13·Redis 연결 설정과 단일 API 앱을 사용하는 초기 골격이다. 쿠폰 초기 테이블은 Flyway로 관리한다. 도메인 API, 워커와 운영 배포는 아직 구현하지 않았다.
 - DB는 MySQL 8.4.13을 사용하며 Compose와 Testcontainers 버전을 함께 유지한다. Phase 2에서 API/Worker를 독립 JVM·컨테이너로 분리한다. 목표를 현재 구현 완료로 설명하지 않는다.
 - 기본 대화와 프로젝트 문서는 한국어로 작성하고 코드 식별자는 영어로 작성한다.
 
@@ -42,7 +42,7 @@
 - 통합 테스트에는 @Tag("integration")을 붙인다. Testcontainers와 Docker를 사용하며 로컬 Compose 데이터에 의존하지 않는다.
 - build만으로 통합 테스트가 실행되지는 않는다. DB/Redis 연결 및 설정 변경 시 integrationTest도 실행한다.
 - Docker나 네트워크 제한으로 검증이 막히면 수행한 검사와 미검증 항목을 구분해 보고한다. 테스트를 우회하고 성공했다고 보고하지 않는다.
-- DB 스키마 자동 생성에 의존하지 않는다. 첫 테이블 추가 시 버전 관리된 마이그레이션을 도입한다.
+- DB 스키마 자동 생성에 의존하지 않는다. Flyway SQL 마이그레이션으로 관리하며 적용한 버전 파일은 수정하지 않는다. 실행 책임은 현재 event-api에 있고 JPA는 ddl-auto: validate를 유지한다.
 - Redis Lua의 원자성과 DB 트랜잭션의 경계를 구분한다. Redis 키만으로 exactly-once를 보장한다고 가정하지 않는다.
 - 쿠폰 기능에서는 초과 발급과 동일 이벤트·사용자 중복 확정을 검증한다. 대기 순서와 최종 발급 순서의 보장 범위를 명시한다.
 - Streams 소비자는 중복 처리와 DB 커밋 이후 알림을 고려한다.
