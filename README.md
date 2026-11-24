@@ -28,6 +28,7 @@ docker compose up -d --wait
 - 메트릭: `http://localhost:8080/actuator/prometheus`
 - 앱 종료: `Ctrl+C`, 인프라 종료: `docker compose down` (데이터 볼륨 유지)
 - IDE에서는 루트 `settings.gradle`을 Gradle 프로젝트로 열고 SDK/Gradle JVM을 JDK 25로 지정한다.
+- 로컬 Compose는 MySQL을 `127.0.0.1:3307`에 공개한다(컨테이너 내부는 3306). 기존 `.env`의 `DB_URL`과 IDE 접속 설정도 3307로 맞춘다.
 - `.env`는 Spring Boot가 자동 로드하지 않는다. 셸 환경 변수나 IDE 실행 설정으로 전달한다.
 - Compose의 로컬용 자격 증명과 모니터링 노출 설정은 운영 배포 전에 변경한다.
 
