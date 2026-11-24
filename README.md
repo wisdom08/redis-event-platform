@@ -46,7 +46,9 @@ CI와 동일한 검증: `./gradlew build :apps:event-api:integrationTest --no-da
 
 Linux VM에 MySQL·Redis만 먼저 실행하려면 [Rocky Linux 인프라 실행 절차](docs/runbooks/rocky-linux-infrastructure.md)를 따른다. 이 단계에는 JDK가 필요하지 않다.
 
-[쿠폰 API 실행 예시](docs/runbooks/coupon-api.md)에서 이벤트 생성·발급·결과 조회를 확인할 수 있다. 현재는 JDBC·MySQL 트랜잭션으로 확정하고 Redis 발급 로직은 후속 구현한다. [발급 설계 결정](docs/adr/0004-db-coupon-issuance.md)을 참고한다.
+[쿠폰 API 실행 예시](docs/runbooks/coupon-api.md)에서 이벤트 생성·발급·결과 조회를 확인할 수 있다. 현재 공개 API는 JDBC·MySQL 트랜잭션으로 확정한다. [발급 설계 결정](docs/adr/0004-db-coupon-issuance.md)을 참고한다.
+
+Redis Lua 예약·Stream 기록은 내부 컴포넌트로 구현했다. 아직 HTTP API·Worker에 연결하지 않았으며, 같은 이벤트에 DB 직접 발급과 Redis 예약을 병용하면 안 된다. [Redis 예약 검토 보고서](docs/results/2026-11-24-redis-reservation.md)와 [ADR 0005](docs/adr/0005-redis-coupon-reservation.md)에 구현 범위·검증·후속 작업을 정리했다.
 
 ## 1. 프로젝트 소개
 

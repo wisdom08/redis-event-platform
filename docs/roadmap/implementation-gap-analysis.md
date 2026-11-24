@@ -77,3 +77,9 @@ modules/event에 JDBC 기반 생성·조회·발급 서비스와 저장소, 앱�
 검증: build + integrationTest 통과 후 잠금 실패 응답 테스트를 추가해 integrationTest 재실행도 통과했다. 단위 4개·통합 12개. 재고 10개에 서로 다른 사용자 40건은 10건 확정·30건 품절, 같은 사용자 40건은 1건 확정·39건 중복으로 검증했다. 저장 실패 시 재고 롤백, 시작 포함/종료 제외, HTTP 201/400/404/409 및 잠금 예외 주입 시 503·Retry-After를 확인했다. 잠금 실패 테스트는 예외 주입이며 실제 데드락 재현 실험은 아니다. 성능 측정·실제 VM DB 변경·배포는 수행하지 않았다.
 
 발급 정책과 보장 범위는 ADR 0004, 호출 예시는 docs/runbooks/coupon-api.md를 따른다. Phase 1 전체 완료는 아니며 Redis Lua 비교 및 실행 구성·실험은 남아 있다.
+
+## 2026-11-24 Redis 예약 내부 컴포넌트
+
+Lua 기반 중복·기간·재고 검사와 Hash 예약·Stream 작업 기록을 추가했다. 동일 사용자 재요청은 같은 메시지 ID를 반환한다. DB 직접 발급 API는 유지하며 Redis 컴포넌트는 공개 연결하지 않았다. 발급 방식 분리, Worker·DB 확정·ACK·Pending 회수는 후속 범위다. Phase 1 전체 완료나 성능 개선 달성을 의미하지 않는다.
+
+설계는 [ADR 0005](../adr/0005-redis-coupon-reservation.md), 재현 명령·오류 주입과 검증 결과는 [검토 보고서](../results/2026-11-24-redis-reservation.md)를 참고한다.
