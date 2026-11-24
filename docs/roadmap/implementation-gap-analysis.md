@@ -69,3 +69,11 @@ Flyway 실행 책임은 event-api에 두고 V1 events, V2 coupon_issuances를 �
 후속 결정: 실제 DB에 V1/V2 미적용임을 사용자에게 확인하고 초기 SQL의 수량·기간·사용자 ID CHECK를 제거했다. DB에는 PK·NOT NULL·UNIQUE·FK를 유지한다. 수량·기간·사용자 ID 검증과 재고 차감 트랜잭션은 후속 애플리케이션 구현 대상이다. 위 CHECK 테스트 결과는 제거 전 이력이다.
 
 CHECK 제거 후 재검증: build 및 integrationTest 통과(5개). Flyway 적용·재실행, 중복 발급 거부, 존재하지 않는 이벤트 참조 거부, 발급 이력이 있는 이벤트 삭제 거부와 데이터 보존을 확인했다.
+
+## DB 기반 쿠폰 API 구현
+
+modules/event에 JDBC 기반 생성·조회·발급 서비스와 저장소, 앱에 HTTP 계층을 추가했다. 수량·기간·식별자 검증은 앱에서 수행하고 READ COMMITTED 트랜잭션에서 이벤트 행 잠금 → 중복/기간 검사 → 조건부 재고 차감 → 발급 INSERT 순서로 처리한다. Redis Lua·Streams·Worker는 미구현이다.
+
+검증: build + integrationTest 통과 후 잠금 실패 응답 테스트를 추가해 integrationTest 재실행도 통과했다. 단위 4개·통합 12개. 재고 10개에 서로 다른 사용자 40건은 10건 확정·30건 품절, 같은 사용자 40건은 1건 확정·39건 중복으로 검증했다. 저장 실패 시 재고 롤백, 시작 포함/종료 제외, HTTP 201/400/404/409 및 잠금 예외 주입 시 503·Retry-After를 확인했다. 잠금 실패 테스트는 예외 주입이며 실제 데드락 재현 실험은 아니다. 성능 측정·실제 VM DB 변경·배포는 수행하지 않았다.
+
+발급 정책과 보장 범위는 ADR 0004, 호출 예시는 docs/runbooks/coupon-api.md를 따른다. Phase 1 전체 완료는 아니며 Redis Lua 비교 및 실행 구성·실험은 남아 있다.

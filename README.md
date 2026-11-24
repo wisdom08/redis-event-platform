@@ -4,7 +4,7 @@
 
 **상태:** 초기 골격 · **목표 환경:** Rocky Linux 온프레미스 실습 · **구조:** Gradle 멀티모듈, API/Worker 독립 실행 목표
 
-현재는 **단일 API 앱 + Redis + MySQL 8.4.13** 연결 설정과 통합 테스트가 있다. 다음 목표는 **쿠폰 MVP → API/Worker 분리 → 확장·장애 복구 검증**이다. 쿠폰 초기 테이블은 Flyway로 관리하며, 도메인 API·Worker·운영 배포는 아직 구현하지 않았다. [공유 로드맵](docs/roadmap/infrastructure-reliability-roadmap.md)과 [현재 구현 차이 분석](docs/roadmap/implementation-gap-analysis.md)을 기준으로 단계별로 진행한다.
+현재는 **단일 API 앱 + Redis + MySQL 8.4.13** 연결 설정과 통합 테스트가 있다. DB 기반 쿠폰 생성·발급·조회 API를 구현했고, 다음 목표는 **Redis Lua 적용 → API/Worker 분리 → 확장·장애 복구 검증**이다. 쿠폰 테이블은 Flyway로 관리하며 Worker·운영 배포는 아직 구현하지 않았다. [공유 로드맵](docs/roadmap/infrastructure-reliability-roadmap.md)과 [현재 구현 차이 분석](docs/roadmap/implementation-gap-analysis.md)을 기준으로 단계별로 진행한다.
 
 ## 로컬 개발 시작
 
@@ -38,12 +38,14 @@ java -jar apps/event-api/build/libs/event-api-0.0.1-SNAPSHOT.jar
 ```
 
 통합 테스트는 임시 컨테이너를 사용하며 로컬 Compose를 실행할 필요가 없다. CI에서는 두 명령을 모두 실행한다.
-도메인 API는 아직 없으며 `events`, `coupon_issuances` 초기 테이블을 Flyway SQL로 관리한다. 앱 시작 시 `db/migration`의 미적용 버전을 순서대로 실행한다. JPA는 `ddl-auto: validate`를 유지한다. 적용한 SQL은 수정하지 않고 다음 버전을 추가한다. [스키마 관리 결정](docs/adr/0003-flyway-schema-management.md)을 참고한다.
+`events`, `coupon_issuances` 테이블을 Flyway SQL로 관리한다. 앱 시작 시 `db/migration`의 미적용 버전을 순서대로 실행한다. JPA는 `ddl-auto: validate`를 유지한다. 적용한 SQL은 수정하지 않고 다음 버전을 추가한다. [스키마 관리 결정](docs/adr/0003-flyway-schema-management.md)을 참고한다.
 초기 구조는 [ADR 0001](docs/adr/0001-initial-project-structure.md), MySQL 전환과 API/Worker 분리 방향은 [ADR 0002](docs/adr/0002-infrastructure-reliability-direction.md)에 기록했다. MySQL은 Compose와 Testcontainers 모두 `mysql:8.4.13`을 사용한다. 문자셋은 utf8mb4, 서버 타임존은 UTC로 설정한다.
 
 CI와 동일한 검증: `./gradlew build :apps:event-api:integrationTest --no-daemon`. 영속 볼륨을 삭제하는 `docker compose down -v`는 데이터 보존이 필요한 환경에서 사용하지 않는다.
 
 Linux VM에 MySQL·Redis만 먼저 실행하려면 [Rocky Linux 인프라 실행 절차](docs/runbooks/rocky-linux-infrastructure.md)를 따른다. 이 단계에는 JDK가 필요하지 않다.
+
+[쿠폰 API 실행 예시](docs/runbooks/coupon-api.md)에서 이벤트 생성·발급·결과 조회를 확인할 수 있다. 현재는 JDBC·MySQL 트랜잭션으로 확정하고 Redis 발급 로직은 후속 구현한다. [발급 설계 결정](docs/adr/0004-db-coupon-issuance.md)을 참고한다.
 
 ## 1. 프로젝트 소개
 
